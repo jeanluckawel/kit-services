@@ -134,10 +134,6 @@ Route::post('/employees/{employee}/entreprise', [EmployeeEntrepriseController::c
 //// Items Routes
 //Route::resource('items', \App\Http\Controllers\ItemsController::class);
 
-// Purchase Orders Routes
-Route::resource('purchase-orders', \App\Http\Controllers\PurchaseOrdersController::class)->except(['edit', 'update', 'destroy'])->middleware(['auth', 'verified']);
-Route::get('purchase-orders/{id}/statement', [\App\Http\Controllers\PurchaseOrdersController::class, 'show'])->name('purchase-orders.show')->middleware(['auth', 'verified']);
-
 
 
 // Clients
