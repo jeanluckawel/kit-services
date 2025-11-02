@@ -4,19 +4,20 @@
 
 @section('content')
 
-    <div class="flex justify-end mb-4 mr-10">
-        <!-- Bouton pour télécharger la facture -->
-        <button onclick="downloadPDF()" class="bg-black text-white font-bold py-2 px-4 rounded">
-            Télécharger la facture PDF
-        </button>
+{{--    <div class="flex justify-end mb-4 mr-10">--}}
+{{--        <!-- Bouton pour télécharger la facture -->--}}
+{{--        <button onclick="downloadPDF()" class="bg-black text-white font-bold py-2 px-4 rounded">--}}
+{{--            Télécharger la facture PDF--}}
+{{--        </button>--}}
 
-        <!-- Bouton retour -->
-        <a href="{{ route('customers.index') }}" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded ml-2 inline-flex items-center gap-1">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i> Retour
-        </a>
-    </div>
+{{--        <!-- Bouton retour -->--}}
+{{--        <a href="{{ route('customers.index') }}" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded ml-2 inline-flex items-center gap-1">--}}
+{{--            <i data-lucide="arrow-left" class="w-4 h-4"></i> Retour--}}
+{{--        </a>--}}
+{{--    </div>--}}
 
     <!-- Contenu de la facture -->
+<div class="max-w-4xl mx-auto p-4">
     <div id="invoice-content" class="mx-auto shadow-lg" style="width: 21cm; height: 29.7cm; padding: 2cm; background: white; box-sizing: border-box; font-size: 12px; overflow: hidden;">
         <!-- Header -->
         <div class="flex justify-between items-start border-b pb-4 mt-5 mb-4">
@@ -126,6 +127,20 @@
             <p>For any inquiries, please contact us at <a href="mailto:kitservice17@gmail.com" class="underline text-blue-600">kitservice17@gmail.com</a></p>
         </div>
     </div>
+
+    <div class="mt-6 flex space-x-3">
+        <a href="{{ url()->previous() }}"
+           class="bg-red-600 text-white px-4 py-1.5 rounded hover:bg-red-700 transition text-[12px]">
+            Retour
+        </a>
+
+
+        <button onclick="downloadPDF()"
+                class="bg-black text-white px-4 py-1.5 rounded hover:bg-orange-700 transition text-[12px]">
+            Télécharger PDF
+        </button>
+    </div>
+</div>
 
     <!-- Script html2pdf.js -->
     <script src="https://raw.githack.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.min.js"></script>

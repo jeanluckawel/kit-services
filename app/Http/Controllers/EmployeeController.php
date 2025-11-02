@@ -489,6 +489,7 @@ class EmployeeController extends Controller
         ]);
 
         $employee->update([
+            'status' => 1,
             'end_contract_date' => $validated['end_contract_date'],
         ]);
 
