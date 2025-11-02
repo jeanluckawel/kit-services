@@ -23,6 +23,7 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+
         return [
             'name' => 'Kit services',
             'email' => 'info@Kitservice.com',

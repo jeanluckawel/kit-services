@@ -5,7 +5,6 @@ deploy:
 		git pull && \
 		composer install --no-dev --optimize-autoloader && \
 		if [ ! -f .env ]; then cp .env.example .env; fi && \
-		if [ ! -f database/database.sqlite ]; then touch database/database.sqlite; fi && \
 		php artisan key:generate --force && \
 		php artisan migrate:fresh --seed --step && \
 		php artisan cache:clear && \
