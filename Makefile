@@ -1,7 +1,7 @@
 # Déploiement complet Laravel sur le serveur
 deploy:
 	ssh -p 21098 kitsopmg@kit-services.org '\
-		cd ~/public_html//kit-services && \
+		cd ~/public_html/kit-services && \
 		git pull && \
 		composer install --no-dev --optimize-autoloader && \
 		if [ ! -f .env ]; then cp .env.example .env; fi && \
