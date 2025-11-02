@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@yield('title', 'Kit Service')</title>
+
+    <meta name="description" content="Kitservice - Gestion complète des employés, paie et services. Connectez-vous pour accéder à votre tableau de bord.">
+
+
+    <meta property="og:title" content="Kitservice - Connexion">
+    <meta property="og:description" content="Connectez-vous à Kitservice pour gérer vos employés, factures et services facilement.">
+    <meta property="og:image" content="{{ asset('logo/metadatahome.png.png') }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
