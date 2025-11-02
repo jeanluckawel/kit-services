@@ -123,6 +123,16 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
 
+
+    <meta property="og:title" content="Kitservice - Connexion">
+    <meta property="og:description" content="Connectez-vous à Kitservice pour gérer vos employés, factures et services facilement.">
+    <meta property="og:image" content="{{ asset('logo/metadatahome.png.png') }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+
+
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
