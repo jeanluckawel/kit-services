@@ -114,6 +114,15 @@
     <title>Login - Kitservice</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Meta description pour SEO -->
+    <meta name="description" content="Kitservice - Gestion complète des employés, paie et services. Connectez-vous pour accéder à votre tableau de bord.">
+
+    <meta property="og:title" content="Kitservice - Connexion">
+    <meta property="og:description" content="Connectez-vous à Kitservice pour gérer vos employés, factures et services facilement.">
+    <meta property="og:image" content="{{ asset('logo/metadatahome.png.png') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
