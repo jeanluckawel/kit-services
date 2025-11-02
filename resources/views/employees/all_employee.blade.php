@@ -36,7 +36,11 @@
                             $endDate = Carbon::parse($employee->end_contract_date);
                             $now = Carbon::now();
                             $daysLeft = intval($now->diffInDays($endDate, false));
-                            if ($daysLeft <= 20 && $daysLeft >= 0) $rowClass = 'bg-red-50';
+
+                            // Highlight si <=20 jours ou déjà passé
+                            if ($daysLeft <= 20) {
+                                $rowClass = 'bg-red-50';
+                            }
                         }
 
                         $gender = strtolower($employee->gender);
@@ -54,15 +58,21 @@
                         <td class="px-4 py-3 text-gray-600">{{ $employee->department }}</td>
                         <td class="px-4 py-3 text-gray-600">{{ $employee->function }}</td>
                         <td class="px-4 py-3">
-                            <span class="px-2 py-1 rounded text-xs font-semibold
-                                {{ $employee->contract_type === 'CDD' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700' }}">
-                                {{ $employee->contract_type }}
-                            </span>
+                        <span class="px-2 py-1 rounded text-xs font-semibold
+                            {{ $employee->contract_type === 'CDD' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700' }}">
+                            {{ $employee->contract_type }}
+                        </span>
                         </td>
                         <td class="px-4 py-3">{{ $employee->end_contract_date ? Carbon::parse($employee->end_contract_date)->format('d/m/Y') : '—' }}</td>
                         <td class="px-4 py-3">
-                            @if($daysLeft !== null && $daysLeft <= 20 && $daysLeft >= 0)
-                                <span class="text-red-600 font-semibold">{{ $daysLeft }} jours</span>
+                            @if($daysLeft !== null)
+                                @if($daysLeft <= 20)
+                                    <span class="{{ $daysLeft < 0 ? 'text-red-600 font-semibold' : 'text-orange-600 font-semibold' }}">
+                                    {{ $daysLeft }} jours
+                                </span>
+                                @else
+                                    <span class="text-gray-400 text-xs">-</span>
+                                @endif
                             @else
                                 <span class="text-gray-400 text-xs">-</span>
                             @endif
@@ -70,7 +80,7 @@
 
                         <td class="px-4 py-3 text-center">
                             {{-- CDD Review --}}
-                            @if($employee->contract_type === 'CDD' && $daysLeft !== null && $daysLeft <= 20 && $daysLeft >= 0)
+                            @if($employee->contract_type === 'CDD' && $daysLeft !== null && $daysLeft <= 20)
                                 <button onclick="openReviewModal('{{ $employee->employee_id }}', '{{ $employee->end_contract_date }}')"
                                         class="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-700 text-xs font-semibold">
                                     Review
@@ -95,36 +105,18 @@
     <!-- MODAL TERMINATION LETTER -->
     <div id="terminationModal" class="fixed inset-0 z-50 bg-black bg-opacity-40 hidden flex items-center justify-center overflow-y-auto p-4">
         <div class="bg-white rounded-lg shadow-xl w-[21cm] max-w-full max-h-[90vh] overflow-y-auto p-6 relative">
-            <!-- Bouton fermer -->
-            <button onclick="closeTerminationModal()"
-                    class="absolute top-3 right-3 text-gray-500 hover:text-red-600 text-lg font-bold">
-                ✖
-            </button>
-
-            <!-- Contenu de la lettre -->
+            <button onclick="closeTerminationModal()" class="absolute top-3 right-3 text-gray-500 hover:text-red-600 text-lg font-bold">✖</button>
             <div id="terminationLetterContent">
-{{--                {!! view('letters.termination', ['employee' => $employee])->render() !!}--}}
+                {{-- Chargement dynamique --}}
             </div>
-
-            <!-- Boutons -->
             <div class="mt-6 flex justify-end space-x-3">
-                <button onclick="closeTerminationModal()"
-                        class="bg-gray-500 text-white px-4 py-1.5 rounded hover:bg-gray-700 transition text-[12px]">
-                    Cancel
-                </button>
-                <button id="downloadPDFBtn"
-                        class="bg-orange-500 text-white px-4 py-1.5 rounded hover:bg-orange-700 transition text-[12px]">
-                    Download
-                </button>
+                <button onclick="closeTerminationModal()" class="bg-gray-500 text-white px-4 py-1.5 rounded hover:bg-gray-700 transition text-[12px]">Cancel</button>
+                <button id="downloadPDFBtn" onclick="downloadPDF()" class="bg-orange-500 text-white px-4 py-1.5 rounded hover:bg-orange-700 transition text-[12px]">Download</button>
             </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-
-
-    {{-- Modal Review CDD --}}
+    <!-- Modal Review CDD -->
     <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-lg w-96 p-6">
             <h2 class="text-lg font-semibold text-gray-800 mb-4">Renew Contract</h2>
@@ -149,30 +141,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-
-
-        function downloadPDF() {
-            const element = document.getElementById("terminationLetterContent");
-
-            // Ajouter un fond blanc pour le PDF
-            element.style.background = "#ffffff";
-
-            const opt = {
-                margin:       [10, 10, 10, 10],
-                filename:     "{{ strtoupper(($employee->first_name ?? '') . '_' . ($employee->last_name ?? '')) }}_lettre_licenciement.pdf",
-                image:        { type: 'jpeg', quality: 1 },
-                html2canvas:  { scale: 2, useCORS: true, logging: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save();
-        }
-
-        // Fonction pour fermer le modal
-        function closeTerminationModal() {
-            document.getElementById('terminationModal').classList.add('hidden');
-        }
-
         function openTerminationModal(employeeId) {
             const modal = document.getElementById('terminationModal');
             const content = document.getElementById('terminationLetterContent');
@@ -185,10 +153,12 @@
                 .catch(() => content.innerHTML = '<p class="text-red-600 text-center">Erreur de chargement.</p>');
         }
 
-        function closeTerminationModal() { document.getElementById('terminationModal').classList.add('hidden'); }
+        function closeTerminationModal() {
+            document.getElementById('terminationModal').classList.add('hidden');
+        }
 
         function downloadPDF() {
-            const element = document.getElementById('terminationLetterContainer');
+            const element = document.getElementById('terminationLetterContent');
             html2pdf().set({
                 margin: 0.5,
                 filename: 'termination_letter.pdf',
@@ -209,6 +179,8 @@
             form.action = `/employees/${employeeId}/renew`;
         }
 
-        function closeReviewModal() { document.getElementById('reviewModal').classList.add('hidden'); }
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.add('hidden');
+        }
     </script>
 @endsection
