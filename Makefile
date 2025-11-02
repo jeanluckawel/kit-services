@@ -10,7 +10,8 @@ deploy:
 		php artisan migrate:fresh --seed --step && \
 		php artisan cache:clear && \
 		php artisan config:cache && \
-		php artisan route:cache && \
+		php artisan config:cache && \
+		php artisan optimize:clear  && \
 		php artisan storage:link \
 	'
 
