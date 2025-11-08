@@ -46,9 +46,13 @@
                     </div>
 
                     <div class="flex flex-col md:flex-row gap-4 mb-4">
+
                         <x-form.input name="amount[]" label="Montant" type="number" step="0.01" required autocomplete="off"/>
+                        <input type="number" id="tentacles" name="tentacles" min="10" max="100" />
                         <x-form.select name="category[]" label="Catégorie" required :options="['urgent'=>'Urgent','normal'=>'Normal']"/>
                     </div>
+
+
 
                     <div class="flex flex-col mb-2">
                         <x-form.input name="description[]" label="Description" required autocomplete="off"/>

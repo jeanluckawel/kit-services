@@ -74,7 +74,7 @@
                     <!-- Human Resources -->
                     <div class="text-center">
                         <p class="font-bold text-gray-700 uppercase">HUMAN RESOURCES</p>
-                        <p class="text-gray-600">BANZA GLORY</p>
+{{--                        <p class="text-gray-600">BANZA GLORY</p>--}}
                     </div>
 
                     <!-- Logo + Timbre -->

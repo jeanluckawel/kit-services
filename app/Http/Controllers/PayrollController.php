@@ -36,8 +36,9 @@ class PayrollController extends Controller
     public function oneEmployee($employeeId)
     {
         $employees = Employee::where('employee_id', $employeeId)->firstOrFail();
+        $childCount = Employee::withCount('child')->get();
 
-        return view('payroll.oneEmployee', compact('employees'));
+        return view('payroll.oneEmployee', compact('employees','childCount'));
     }
 
     /**
@@ -126,35 +127,6 @@ class PayrollController extends Controller
         } else {
             $ipr_rate = 0;
         }
-
-//        dd([
-//            'Employee' => $employee->employee_id,
-//            'Exchange rate' => $exchange_rate,
-//            'Worked days' => $worked_days,
-//            'Basic USD Salary' => $basic_usd_salary,
-//            'Baremic Salary' => $baremic_salary,
-//            'Sick Leave' => $sick_leave,
-//            'Accomodation Allowance' => $accomodation_allowance,
-//            'Overtime 30% USD' => $overtime_30_usd,
-//            'Overtime 60% USD' => $overtime_60_usd ?? '',
-//            'Total Earnings USD' => $total_earnings_usd,
-//            'INSS 5%' => $inss_5,
-//            'Monthly IPR' => $monthly_ipr,
-//            'inss tax base' => $inss_tax_base,
-//            'ipr tax base' => $ipr_tax_base,
-//            'annual ipr tax base' => $annual_ipr_tax_base,
-//        ]);
-
-
-
-
-
-
-
-        // 2. Dates de paie
-//        $year = now()->year;
-//        $start = \Carbon\Carbon::LLcreate($year, $period, 16);
-//        $end = $start->copy()->addMonth()->day(15);
 
 
         \App\Models\Payroll::updateOrCreate(
