@@ -25,6 +25,9 @@
 #</IfModule>
 
 RewriteEngine On
-RewriteRule ^$ public/ [L]
-RewriteRule (.*) public/$1 [L]
+
+# Redirige toutes les requêtes vers /kit-services/public
+RewriteCond %{REQUEST_URI} !^/kit-services/public/
+RewriteRule ^(.*)$ /kit-services/public/$1 [L,QSA]
+
 
