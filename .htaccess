@@ -1,0 +1,5 @@
+RewriteEngine On
+
+# Si l'URL ne contient pas /kit-services/public/, on redirige
+RewriteCond %{REQUEST_URI} !^/kit-services/public/
+RewriteRule ^(.*)$ /kit-services/public/$1 [L,QSA]
