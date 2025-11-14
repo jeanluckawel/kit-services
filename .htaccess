@@ -1,11 +1,14 @@
 RewriteEngine On
 
-# NE PAS rediriger si on est déjà dans /kit-services/public/
-RewriteCond %{REQUEST_URI} !^/kit-services/public/
+# Si l'URL contient /kit-services/public/, rediriger vers /kit-services/
+RewriteCond %{REQUEST_URI} ^/kit-services/public
+RewriteRule ^kit-services/public/?(.*)$ /kit-services/$1 [L,R=302]
 
-# Redirige TOUT vers /kit-services/public/ mais
-# GARDE la structure des URL (login, register, dashboard, etc.)
+# Ne pas rediriger vers public pour les URLs déjà propres
+RewriteCond %{REQUEST_URI} !^/kit-services/public
+
+# Rediriger toutes les requêtes vers public (mais garder l'URL propre)
 RewriteRule ^kit-services/(.*)$ /kit-services/public/$1 [L,QSA]
 
-# Si on est juste sur /kit-services/, charger index Laravel
+# Si on ouvre /kit-services/, charger Laravel
 RewriteRule ^kit-services/?$ /kit-services/public/index.php [L,QSA]
