@@ -50,7 +50,48 @@
         .info-grid p {
             margin: 2px 0;
         }
+
+        /* Boutons Kit Service */
+        .btn-orange {
+            background-color: #f97316;
+            color: white;
+            font-weight: bold;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-orange:hover {
+            background-color: #ea580c;
+        }
+
+        .btn-back {
+            background-color: #6b7280;
+            color: white;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background-color: #4b5563;
+        }
     </style>
+
+    <div class="mb-6 no-print">
+        <a href="{{ route('employees.index') }}" class="btn-back">
+            <i class='bx bx-arrow-back'></i> Retour
+        </a>
+    </div>
 
     <div id="payroll">
         <!-- En-tête -->
@@ -72,7 +113,7 @@
                 <p><strong>Département:</strong> {{ $employee->department ?? '' }}</p>
                 <p><strong>Date d'embauche:</strong> {{ $employee->created_at->format('d/m/Y') ?? '' }}</p>
                 <p><strong>Point de paie:</strong> KAMOA</p>
-                <p><strong>Nombre d'enfants:</strong> 0</p>
+{{--                <p><strong>Nombre d'enfants:</strong> {{ $employee->children->count() ?? 0 }}</p>--}}
                 <p><strong>N CNSS:</strong> ..............................</p>
             </div>
             <div>
@@ -87,70 +128,54 @@
                 <p><strong>Affiliation CNSS:</strong> 050302727C1</p>
             </div>
         </div>
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
 
-        <!-- Données de Paie -->
+        <!-- Détails du salaire -->
         <div class="info-grid avoid-break mb-4">
             <div>
                 <div class="section-title">Détails du Salaire</div>
-                <p><strong>Temps (jours):</strong> {{ $employee->payroll->worked_days ?? '' }}</p>
-                <p><strong>Salaire Brut Mensuel:</strong> {{ $employee->payroll->basic_usd_salary ?? '' }} $</p>
-                <p><strong>Congé Annuel:</strong> 0</p>
-                <p><strong>Congé Maladie:</strong> 0</p>
-                <p><strong>Logement (Avantage):</strong> {{ $employee->payroll->accommodation_allowance ?? '' }} $</p>
+                <p><strong>Temps (jours):</strong> {{ $payroll->worked_days ?? 0 }}</p>
+                <p><strong>Salaire de Base:</strong> {{ number_format($payroll->basic_usd_salary ?? 0, 0, ',', '.') }} USD</p>
+                <p><strong>Heures Supplémentaires:</strong> {{ number_format($payroll->ot_amount ?? 0, 0, ',', '.') }} USD</p>
+                <p><strong>Logement / Avantages:</strong> {{ number_format($payroll->accommodation_allowance ?? 0, 0, ',', '.') }} USD</p>
+                <p><strong>Congé Annuel:</strong> {{ number_format($payroll->annual_leave ?? 0, 0, ',', '.') }} USD</p>
+                <p><strong>Congé Maladie:</strong> {{ number_format($payroll->sick_leave ?? 0, 0, ',', '.') }} USD</p>
             </div>
             <div>
                 <div class="section-title">Déductions</div>
-                <p><strong>INSS 5%:</strong> {{ $employee->payroll->inss_5 ?? '' }} CDF</p>
-                <p><strong>IPR:</strong> {{ $employee->payroll->ipr_rate ?? '' }} CDF</p>
+                <p><strong>INSS 5%:</strong> {{ number_format($payroll->inss_5 ?? 0, 0, ',', '.') }} CDF</p>
+                <p><strong>IPR:</strong> {{ number_format($payroll->ipr_rate ?? 0, 0, ',', '.') }} CDF</p>
+                <p><strong>Autres Déductions:</strong> {{ number_format($payroll->other_deductions ?? 0, 0, ',', '.') }} CDF</p>
             </div>
         </div>
 
         <!-- Totaux -->
         <div class="info-grid avoid-break mb-3 font-semibold">
-            <div><strong>Total Brut:</strong> ${{ $employee->payroll->basic_usd_salary *  2800 ?? '' }}</div>
-            <div><strong>Total Déductions:</strong> 6,822 CDF</div>
+            <div><strong>Total Brut (USD):</strong> {{ number_format($payroll->total_earnings ?? 0, 0, ',', '.') }} USD</div>
+            <div><strong>Total Déductions (CDF):</strong> {{ number_format($payroll->total_taxes_cdf ?? 0, 0, ',', '.') }} CDF</div>
         </div>
 
         <!-- Net à payer -->
         <div class="info-grid avoid-break mb-5 font-bold text-green-700">
-            <div><strong>Net à Payer (USD):</strong> ${{ $employee->payroll->basic_usd_salary ?? '' }}</div>
-            <div><strong>Net à Payer (CDF):</strong> CDF {{ $employee->payroll->basic_usd_salary * 2800  ?? '' }} </div>
+            <div><strong>Net à Payer (USD):</strong> {{ number_format($payroll->net_usd ?? 0, 0, ',', '.') }} USD</div>
+            <div><strong>Net à Payer (CDF):</strong> {{ number_format($payroll->net ?? 0, 0, ',', '.') }} CDF</div>
         </div>
 
         <!-- Signature -->
         <div class="text-right mt-8 avoid-break">
             <p class="inline-block border-t border-gray-600 pt-2">Signature de l'agent</p>
         </div>
-
-
     </div>
 
     <!-- Boutons -->
-
-
-    <div class="no-print mt-6 flex  gap-4">
-        <button onclick="generatePDF()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-            Download
-        </button>
-{{--        <button onclick="window.print()" class="bg-black text-white px-6 py-2 rounded hover:bg-green-700">--}}
-{{--            Print--}}
-{{--        </button>--}}
-
-        <button onclick="sendPdfByEmail()" class="bg-black text-white px-6 py-2 rounded hover:bg-green-700">
-            Send
+    <div class="no-print mt-6 flex gap-4">
+        <button onclick="generatePDF()" class="btn-orange">
+            <i class='bx bx-download'></i> Télécharger
         </button>
 
+        <button onclick="sendPdfByEmail()" class="btn-orange">
+            <i class='bx bx-send'></i> Envoyer
+        </button>
     </div>
-
-
-
-
 
     <!-- Script PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -166,7 +191,6 @@
             };
             html2pdf().set(opt).from(element).save();
         }
-
 
         function sendPdfByEmail() {
             const element = document.getElementById('payroll');

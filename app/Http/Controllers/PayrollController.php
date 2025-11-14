@@ -8,6 +8,7 @@ use App\Models\Payroll;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 /**
  *
@@ -48,140 +49,82 @@ class PayrollController extends Controller
     {
         $employee = Employee::where('employee_id', $employee_id)->firstOrFail();
 
-        $request->validate([
-            'worked_days' => 'required|integer',
-            'exchange_rate' => 'required|numeric',
-            'sick_days' => 'integer',
-            'overtime_hours' => 'integer',
+        $validator = Validator::make($request->all(), [
+            'exchange_rate' => 'required|numeric|min:0',
+            'worked_days' => 'required|integer|min:0|max:31',
+            'sick_days' => 'nullable|integer|min:0|max:31',
+            'overtime_hours_30' => 'nullable|numeric|min:0',
+            'overtime_hours_60' => 'nullable|numeric|min:0',
+            'overtime_hours_100' => 'nullable|numeric|min:0',
+            'baremic_salary' => 'required|numeric|min:0',
+            'sick_leave' => 'nullable|numeric|min:0',
+            'accommodation_allowance' => 'nullable|numeric|min:0',
+            'overtime_30' => 'nullable|numeric|min:0',
+            'overtime_60' => 'nullable|numeric|min:0',
+            'overtime_100' => 'nullable|numeric|min:0',
+            'total_earnings' => 'required|numeric|min:0',
+            'inss_5' => 'nullable|numeric|min:0',
+            'ipr_tax_base' => 'nullable|numeric|min:0',
+            'annual_ipr_tax_base' => 'nullable|numeric|min:0',
+            'tranche_2' => 'nullable|numeric|min:0',
+            'tranche_3' => 'nullable|numeric|min:0',
+            'tranche_more_3' => 'nullable|numeric|min:0',
+            'monthly_ipr' => 'nullable|numeric|min:0',
+            'total_taxes_cdf' => 'nullable|numeric|min:0',
+            'net' => 'required|numeric|min:0',
+            'net_usd' => 'required|numeric|min:0',
+            'period' => 'required',
         ]);
 
-        // 1. Récupération des données
-        $basic_usd_salary = $employee->salaire_mensuel_brut;
-
-        $worked_days = $request->worked_days;
-        $exchange_rate = $request->exchange_rate;
-        $dependants = $request->tax_dependants;
-        $period = (int)$request->period;
-
-//      - Calcul Baremic salary
-        $baremic_salary = $basic_usd_salary * $exchange_rate / 22 * $worked_days;
-
-//      - Sick Days
-        $sick_days = $request->sick_days;
-        $sick_leave = round((((($basic_usd_salary * $exchange_rate) * 2) / 3) / 22) * $sick_days, 2);
-
-//      - Calcul Logement
-        $accomodation_allowance = round(($baremic_salary + $sick_leave) * 0.3);
-
-//      - Overtime 30% et 60%
-        $overtime_hours = (int) $request->overtime_hours;
-
-        if ($overtime_hours <= 6) {
-            $overtime_30_usd = round($basic_usd_salary * $exchange_rate / 22 / 9 * $overtime_hours * 1.3, 2);
-            $overtime_60_usd = 0;
-        } else {
-            $overtime_30_usd = round($basic_usd_salary * $exchange_rate / 22 / 9 * 6 * 1.3, 2);
-            $overtime_60_usd = round($basic_usd_salary * $exchange_rate / 22 / 9 * ($overtime_hours - 6) * 1.6, 2);
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
-//      - Total earnings
-        $total_earnings_usd = $baremic_salary + $sick_leave + $accomodation_allowance + $overtime_30_usd + $overtime_60_usd;
-
-//      - INSS 5 %
-        $inss_5 = round(($total_earnings_usd - $accomodation_allowance) * 0.05, 2);
-
-
-        $advantage_1 = $accomodation_allowance;
-        $advantage_2 = 0;
-        $advantage_3 = 0;
-
-        $total_advantages = $advantage_1 + $advantage_2 + $advantage_3;
-
-        if ($total_earnings_usd > 0) {
-            $advantages_ratio = $total_advantages / $total_earnings_usd;
-
-            if ($advantages_ratio < 0.3) {
-                $monthly_ipr = ($total_advantages - $inss_5) / 12;
-            } else {
-                $monthly_ipr = (($total_earnings_usd * 0.3) - $inss_5) / 12;
-            }
-        } else {
-            $monthly_ipr = 0;
-        }
-
-        $monthly_ipr = round($monthly_ipr, 2);
-
-
-//        ipr rate %
-
-        $inss_tax_base = $total_earnings_usd - $accomodation_allowance  ;
-
-        $ipr_tax_base = $inss_tax_base -  $inss_5;
-
-        $annual_ipr_tax_base = $ipr_tax_base * 12;
-
-
-        // Calcul du taux IPR en %
-        if ($total_earnings_usd > 0) {
-            $ipr_rate = round(($monthly_ipr / $ipr_tax_base) * 100, 2);
-        } else {
-            $ipr_rate = 0;
-        }
-
-
-        \App\Models\Payroll::updateOrCreate(
+        Payroll::updateOrCreate(
+            ['employee_id' => $employee->employee_id, 'period' => $request->period],
             [
-                'employee_id' => $employee_id,
-                'period' => $period,
-            ],
-            [
-
-                'basic_usd_salary' => $basic_usd_salary,
-                'start_contract_date' =>$employee->timestamps,
-                'tax_dependants' => 0,
-                'worked_days' => $worked_days,
-                'baremic_salary' => $baremic_salary,
-                'accommodation_allowance' => $accomodation_allowance,
-                'sick_leave' => $sick_leave,
-                'overtime_30' => $overtime_30_usd,
-                'overtime_60' => $overtime_60_usd,
-                'overtime_100' => 0,
-                'total_earnings' => $total_earnings_usd,
-                'inss_5' => $inss_5,
-                'monthly_ipr' => $monthly_ipr,
-                'ipr_rate' => $ipr_rate,
-                'net' => 0,
-                'net_usd' => 0,
-                'cnss_13' => 0,
-                'onem_0_2' => 0,
-                'total_taxes_cdf' => 0,
-                'royalties_10_usd' => 0,
-                'inss_tax_base' => $inss_tax_base,
-                'annual_ipr_tax_base' => 0,
-                'tranche_2' => 0,
-                'tranche_3' => 0,
-                'tranche_more_3' => 0,
-                'deduction' => 0,
-                'period' => 0,
-                'exchange_rate' => $exchange_rate,
+                'exchange_rate' => $request->exchange_rate,
+                'worked_days' => $request->worked_days,
+                'sick_days' => $request->sick_days ?? 0,
+                'overtime_hours_30' => $request->overtime_hours_30 ?? 0,
+                'overtime_hours_60' => $request->overtime_hours_60 ?? 0,
+                'overtime_hours_100' => $request->overtime_hours_100 ?? 0,
+                'baremic_salary' => $request->baremic_salary,
+                'sick_leave' => $request->sick_leave ?? 0,
+                'accommodation_allowance' => $request->accommodation_allowance ?? 0,
+                'overtime_30' => $request->overtime_30 ?? 0,
+                'overtime_60' => $request->overtime_60 ?? 0,
+                'overtime_100' => $request->overtime_100 ?? 0,
+                'total_earnings' => $request->total_earnings,
+                'inss_5' => $request->inss_5 ?? 0,
+                'ipr_tax_base' => $request->ipr_tax_base ?? 0,
+                'annual_ipr_tax_base' => $request->annual_ipr_tax_base ?? 0,
+                'tranche_2' => $request->tranche_2 ?? 0,
+                'tranche_3' => $request->tranche_3 ?? 0,
+                'tranche_more_3' => $request->tranche_more_3 ?? 0,
+                'monthly_ipr' => $request->monthly_ipr ?? 0,
+                'total_taxes_cdf' => $request->total_taxes_cdf ?? 0,
+                'net' => $request->net,
+                'net_usd' => $request->net_usd,
+                'basic_usd_salary' => $employee->basic_usd_salary ?? 0,
             ]
         );
 
-
-        // 🎯 Redirection vers la vue bulletin après paiement
-        return redirect()->route('payroll.show', $employee_id)->with('success', 'Paie enregistrée avec succès. Bulletin affiché ci-dessous.');
+        return redirect()->route('payroll.show', $employee->employee_id)
+            ->with('success', 'Paie enregistrée !');
     }
 
-
     /**
-     * Display the specified resource.
+     * Display payroll form and preview.
      */
     public function show($employee_id)
     {
         $employee = Employee::where('employee_id', $employee_id)->firstOrFail();
-        $payrolls = Payroll::where('employee_id', $employee_id)->orderByDesc('created_at')->get();
+        $payroll = Payroll::where('employee_id', $employee_id)
+            ->orderByDesc('created_at')
+            ->first();
 
-        return view('payroll.show', compact('employee', 'payrolls'));
+        return view('payroll.show', compact('employee', 'payroll'));
     }
 
 
